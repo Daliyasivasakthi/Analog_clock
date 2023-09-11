@@ -1,0 +1,137 @@
+import QtQuick 2.15
+
+ApplicationWindow {
+    visible: true
+    width: 400
+    height: 400
+
+    Rectangle {
+        width: parent.width
+        height: parent.height
+        color: "white"
+
+        property real centerX: width / 2
+        property real centerY: height / 2
+        property real clockRadius: Math.min(centerX, centerY) * 0.9
+        property real hourRotation: 0
+        property real minuteRotation: 0
+        property real secondRotation: 0
+
+        Timer {
+            interval: 1000
+            running: true
+            repeat: true
+            onTriggered: {
+                var now = new Date();
+                var seconds = now.getSeconds();
+                var minutes = now.getMinutes();
+                var hours = now.getHours() % 12;
+
+                hourRotation = (hours * 30 + minutes / 2) % 360;
+                minuteRotation = (minutes * 6 + seconds / 10) % 360;
+                secondRotation = (seconds * 6) % 360;
+            }
+        }
+
+        Repeater {
+            model: 12
+
+            Rectangle {
+                width: 4
+                height: 20
+                color: "black"
+                transform: Rotation {
+                    origin.x: centerX
+                    origin.y: centerY
+                    angle: index * 30
+                }
+            }
+        }
+
+        Rectangle {
+            width: 4
+            height: 40
+            color: "black"
+            transform: Rotation {
+                origin.x: centerX
+                origin.y: centerY
+                angle: minuteRotation
+            }
+
+            MouseArea {
+                id: minuteHandle
+                anchors.centerIn: parent
+                drag.target: parent
+                drag.axis: Drag.XAndYAxis
+
+                onPositionChanged: {
+                    var angle = Math.atan2(centerY - y, centerX - x);
+                    minuteRotation = -angle * 180 / Math.PI + 180;
+                }
+            }
+        }
+
+        Rectangle {
+            width: 4
+            height: 30
+            color: "black"
+            transform: Rotation {
+                origin.x: centerX
+                origin.y: centerY
+                angle: hourRotation
+            }
+
+            MouseArea {
+                id: hourHandle
+                anchors.centerIn: parent
+                drag.target: parent
+                drag.axis: Drag.XAndYAxis
+
+                onPositionChanged: {
+                    var angle = Math.atan2(centerY - y, centerX - x);
+                    hourRotation = -angle * 180 / Math.PI + 180;
+                }
+            }
+        }
+
+        Rectangle {
+            width: 2
+            height: clockRadius - 40
+            color: "red"
+            anchors.centerIn: parent
+            transform: Rotation {
+                origin.x: centerX
+                origin.y: centerY
+                angle: secondRotation
+            }
+        }
+
+        Text {
+            text: "12"
+            font.pixelSize: 20
+            anchors.horizontalCenter: parent.horizontalCenter
+            y: 10
+        }
+
+        Text {
+            text: "3"
+            font.pixelSize: 20
+            anchors.verticalCenter: parent.verticalCenter
+            x: width - 30
+        }
+
+        Text {
+            text: "6"
+            font.pixelSize: 20
+            anchors.horizontalCenter: parent.horizontalCenter
+            y: height - 30
+        }
+
+        Text {
+            text: "9"
+            font.pixelSize: 20
+            anchors.verticalCenter: parent.verticalCenter
+            x: 10
+        }
+    }
+}
